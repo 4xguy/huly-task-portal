@@ -339,19 +339,29 @@ function renderBoardUI(container, projectId) {
       projectId,
       onSave: async (data) => {
         try {
-          const newIssue = await api.createIssue(data);
-          if (newIssue) {
-            boardState.issues.push(newIssue);
-            setState({ issues: boardState.issues });
-          }
+          await api.createIssue(data);
           showToast('Issue created', 'success');
-          renderBoardUI(container, projectId);
+          await refetchAndRender(container, projectId);
         } catch (err) {
           showToast(`Failed to create issue: ${err.message}`, 'error');
         }
       },
     });
   });
+}
+
+/**
+ * Refetches issues from the server and re-renders the board.
+ */
+async function refetchAndRender(container, projectId) {
+  try {
+    const issues = await api.issues(projectId);
+    boardState.issues = issues ?? [];
+    setState({ issues: boardState.issues });
+  } catch (err) {
+    console.error('[portal] refetch failed:', err);
+  }
+  renderBoardUI(container, projectId);
 }
 
 // ── List view helpers ─────────────────────────────────────────
@@ -481,11 +491,8 @@ function openEditModal(issue, container, projectId) {
     onSave: async (data) => {
       try {
         await api.updateIssue(issue.id, data);
-        const idx = boardState.issues.findIndex((i) => i.id === issue.id);
-        if (idx >= 0) Object.assign(boardState.issues[idx], data);
-        setState({ issues: boardState.issues });
         showToast('Issue updated', 'success');
-        renderBoardUI(container, projectId);
+        await refetchAndRender(container, projectId);
       } catch (err) {
         showToast(`Failed to update issue: ${err.message}`, 'error');
       }
@@ -493,10 +500,8 @@ function openEditModal(issue, container, projectId) {
     onDelete: async (deletedIssue) => {
       try {
         await api.deleteIssue(deletedIssue.id);
-        boardState.issues = boardState.issues.filter((i) => i.id !== deletedIssue.id);
-        setState({ issues: boardState.issues });
         showToast('Issue deleted', 'success');
-        renderBoardUI(container, projectId);
+        await refetchAndRender(container, projectId);
       } catch (err) {
         showToast(`Failed to delete issue: ${err.message}`, 'error');
       }
