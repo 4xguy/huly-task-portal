@@ -12,13 +12,13 @@ import { showToast } from '../components/toast.js';
 
 // ── Column definitions ─────────────────────────────────────
 const COLUMNS = [
-  { key: 'Backlog',    label: 'Backlog',     categories: ['backlog'] },
+  { key: 'Backlog',    label: 'Backlog',     categories: ['backlog', 'unstarted'] },
   { key: 'Todo',       label: 'To Do',       categories: ['todo'] },
   { key: 'InProgress', label: 'In Progress', categories: ['inprogress', 'in progress', 'active'] },
   { key: 'Done',       label: 'Done',        categories: ['done', 'won', 'completed'] },
 ];
 
-const SKIP_CATEGORIES = new Set(['cancelled', 'canceled']);
+const SKIP_CATEGORIES = new Set(['cancelled', 'canceled', 'lost']);
 
 /**
  * Normalises a status category string for comparison.
