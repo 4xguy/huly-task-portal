@@ -1,0 +1,495 @@
+/* ── Layout ───────────────────────────────────────────────── */
+* { box-sizing: border-box; }
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background: var(--pico-background-color);
+}
+
+/* ── Header ───────────────────────────────────────────────── */
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--pico-card-background-color);
+  border-bottom: 1px solid var(--pico-card-border-color);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.app-header .logo {
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-decoration: none;
+  color: var(--pico-color);
+  white-space: nowrap;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--pico-muted-color);
+  font-size: 0.9rem;
+  flex: 1;
+}
+
+.breadcrumb .sep { opacity: 0.4; }
+
+.breadcrumb .crumb {
+  color: var(--pico-muted-color);
+  text-decoration: none;
+}
+
+.breadcrumb .crumb.active {
+  color: var(--pico-color);
+  font-weight: 500;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+}
+
+.user-name {
+  font-size: 0.875rem;
+  color: var(--pico-muted-color);
+}
+
+.header-right button {
+  margin: 0;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.8rem;
+}
+
+/* ── Login ────────────────────────────────────────────────── */
+.login-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem;
+  background: var(--pico-card-background-color);
+  border: 1px solid var(--pico-card-border-color);
+  border-radius: 12px;
+}
+
+.login-card h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.login-card .error-msg {
+  color: var(--pico-del-color);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem 0.75rem;
+  background: color-mix(in srgb, var(--pico-del-color) 10%, transparent);
+  border-radius: 6px;
+}
+
+/* ── Project Grid ─────────────────────────────────────────── */
+.projects-page {
+  padding: 2rem 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.projects-page h2 { margin-top: 0; }
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.project-card {
+  background: var(--pico-card-background-color);
+  border: 1px solid var(--pico-card-border-color);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  cursor: pointer;
+  transition: box-shadow 0.15s, border-color 0.15s, transform 0.1s;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.project-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  border-color: var(--pico-primary-border);
+  transform: translateY(-1px);
+}
+
+.project-card .project-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.project-card .project-identifier {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.5rem;
+  background: var(--pico-primary-background);
+  color: var(--pico-primary);
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+}
+
+.project-card .project-members {
+  font-size: 0.8rem;
+  color: var(--pico-muted-color);
+}
+
+/* ── Board ────────────────────────────────────────────────── */
+.board-page {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 57px);
+  overflow: hidden;
+}
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--pico-card-background-color);
+  border-bottom: 1px solid var(--pico-card-border-color);
+  flex-shrink: 0;
+}
+
+.filter-bar button {
+  margin: 0;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.8rem;
+}
+
+.filter-bar .spacer { flex: 1; }
+
+.board {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  overflow-x: auto;
+  flex: 1;
+  align-items: flex-start;
+}
+
+/* ── Column ───────────────────────────────────────────────── */
+.column {
+  flex: 1;
+  min-width: 250px;
+  max-width: 350px;
+  background: var(--pico-card-background-color);
+  border: 1px solid var(--pico-card-border-color);
+  border-radius: 10px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+}
+
+.column-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.25rem 0.75rem;
+  border-bottom: 1px solid var(--pico-card-border-color);
+  margin-bottom: 0.5rem;
+  flex-shrink: 0;
+}
+
+.column-header .col-name {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.count-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.45rem;
+  background: var(--pico-secondary-background);
+  color: var(--pico-secondary-color);
+  border-radius: 12px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.column-body {
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  min-height: 80px;
+}
+
+/* ── Issue Card ───────────────────────────────────────────── */
+.issue-card {
+  background: var(--pico-background-color);
+  border: 1px solid var(--pico-card-border-color);
+  border-left: 3px solid #9ca3af;
+  border-radius: 6px;
+  padding: 0.625rem 0.75rem;
+  cursor: grab;
+  transition: box-shadow 0.15s, transform 0.1s;
+  user-select: none;
+}
+
+.issue-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  transform: translateY(-1px);
+}
+
+.issue-card:active { cursor: grabbing; }
+
+.card-identifier {
+  font-size: 0.7rem;
+  color: var(--pico-muted-color);
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+  letter-spacing: 0.03em;
+}
+
+.card-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+  word-break: break-word;
+}
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.card-due {
+  font-size: 0.7rem;
+  color: var(--pico-muted-color);
+  margin-left: auto;
+}
+
+.card-due.overdue {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+/* ── Avatar Circle ────────────────────────────────────────── */
+.avatar-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+/* ── Drag States ──────────────────────────────────────────── */
+.sortable-ghost {
+  opacity: 0.4;
+  border: 2px dashed var(--pico-primary-border);
+  background: var(--pico-primary-background);
+}
+
+.sortable-chosen {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  transform: rotate(1deg);
+  cursor: grabbing !important;
+}
+
+.sortable-drag {
+  opacity: 1;
+}
+
+/* ── Modal ────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: fadeIn 0.15s ease;
+}
+
+.modal {
+  background: var(--pico-card-background-color);
+  border-radius: 12px;
+  padding: 1.75rem;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  animation: slideUp 0.2s ease;
+}
+
+.modal h3 {
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+  font-size: 1.1rem;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--pico-card-border-color);
+}
+
+.modal-footer .btn-delete {
+  margin-right: auto;
+  background: transparent;
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.modal-footer .btn-delete:hover {
+  background: #ef4444;
+  color: #fff;
+}
+
+.modal-footer button { margin: 0; }
+
+/* ── Loading ──────────────────────────────────────────────── */
+.loading-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--pico-card-border-color);
+  border-top-color: var(--pico-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+/* ── Toast ────────────────────────────────────────────────── */
+#toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.toast {
+  padding: 0.7rem 1.1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  animation: slideInRight 0.25s ease forwards;
+  pointer-events: auto;
+  max-width: 320px;
+}
+
+.toast.info    { background: #3b82f6; }
+.toast.success { background: #22c55e; }
+.toast.error   { background: #ef4444; }
+.toast.warning { background: #f97316; }
+.toast.out     { animation: slideOutRight 0.25s ease forwards; }
+
+/* ── Mobile Tabs ──────────────────────────────────────────── */
+.board-tabs {
+  display: none;
+  gap: 0;
+  background: var(--pico-card-background-color);
+  border-bottom: 1px solid var(--pico-card-border-color);
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.board-tab {
+  padding: 0.6rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  color: var(--pico-muted-color);
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.board-tab.active {
+  color: var(--pico-primary);
+  border-bottom-color: var(--pico-primary);
+}
+
+/* ── Animations ───────────────────────────────────────────── */
+@keyframes spin        { to { transform: rotate(360deg); } }
+@keyframes fadeIn      { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp     { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes slideInRight  { from { transform: translateX(110%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes slideOutRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(110%); opacity: 0; } }
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .app-header { padding: 0.75rem 1rem; }
+  .user-name  { display: none; }
+
+  .projects-page { padding: 1.25rem 1rem; }
+  .project-grid { grid-template-columns: 1fr; }
+
+  .filter-bar { padding: 0.6rem 1rem; }
+
+  .board {
+    padding: 0.75rem 1rem;
+    overflow-x: hidden;
+  }
+
+  .board-tabs { display: flex; }
+
+  /* On mobile: only the active column is visible */
+  .column { display: none; min-width: 100%; max-width: 100%; }
+  .column.tab-active { display: flex; }
+
+  .modal { border-radius: 8px; padding: 1.25rem; }
+  .modal-overlay { align-items: flex-end; padding: 0; }
+  .modal {
+    max-width: 100%;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    max-height: 85vh;
+  }
+
+  #toast-container { bottom: 1rem; right: 1rem; left: 1rem; }
+  .toast { max-width: 100%; }
+}
