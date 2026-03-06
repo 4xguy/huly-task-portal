@@ -11,6 +11,8 @@ class HulyConnection {
     this.token = token;
     this.ws = null;
     this._pending = new Map();
+    this._reconnecting = null;
+    this._pingInterval = null;
   }
 
   connect() {
@@ -21,11 +23,14 @@ class HulyConnection {
       const onOpen = () => {
         cleanup();
         this._attachMessageHandler();
+        this._startPing();
+        console.log('[huly-ws] Connected to transactor');
         resolve();
       };
 
       const onError = (err) => {
         cleanup();
+        console.error('[huly-ws] Connection error:', err.message);
         reject(err);
       };
 
@@ -37,8 +42,9 @@ class HulyConnection {
       this.ws.on('open', onOpen);
       this.ws.on('error', onError);
 
-      this.ws.on('close', () => {
-        // Reject all pending on unexpected close
+      this.ws.on('close', (code, reason) => {
+        console.warn(`[huly-ws] Connection closed: code=${code} reason=${reason || 'none'}`);
+        this._stopPing();
         for (const [id, pending] of this._pending) {
           clearTimeout(pending.timer);
           pending.reject(new Error('WebSocket closed unexpectedly'));
@@ -69,6 +75,28 @@ class HulyConnection {
         pending.resolve(msg.result);
       }
     });
+  }
+
+  async _ensureConnected() {
+    if (this.isAlive()) return;
+
+    // Coalesce concurrent reconnect attempts
+    if (this._reconnecting) return this._reconnecting;
+
+    console.log('[huly-ws] Attempting reconnect...');
+    this._reconnecting = (async () => {
+      if (this.ws) {
+        try { this.ws.terminate(); } catch {}
+        this.ws = null;
+      }
+      await this.connect();
+    })();
+
+    try {
+      await this._reconnecting;
+    } finally {
+      this._reconnecting = null;
+    }
   }
 
   send(method, params) {
@@ -106,11 +134,13 @@ class HulyConnection {
   }
 
   async findAll(className, filter = {}, options = {}) {
+    await this._ensureConnected();
     const raw = await this.send('findAll', [className, filter, options]);
     return parseQueryResult(raw);
   }
 
   async tx(txDoc) {
+    await this._ensureConnected();
     return this.send('tx', [txDoc]);
   }
 
@@ -126,7 +156,25 @@ class HulyConnection {
     await this.connect();
   }
 
+  _startPing() {
+    this._stopPing();
+    this._pingInterval = setInterval(() => {
+      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        this.ws.ping();
+      }
+    }, 15000);
+    if (this._pingInterval.unref) this._pingInterval.unref();
+  }
+
+  _stopPing() {
+    if (this._pingInterval) {
+      clearInterval(this._pingInterval);
+      this._pingInterval = null;
+    }
+  }
+
   close() {
+    this._stopPing();
     if (this.ws) {
       this.ws.close();
       this.ws = null;
