@@ -91,6 +91,9 @@ let boardState = {
   project:   null,
   filterMine: false,
   activeTab:  'Backlog',
+  viewMode:   'board',  // 'board' | 'list'
+  sortCol:    'identifier',
+  sortAsc:    true,
 };
 
 /**
@@ -174,6 +177,10 @@ function renderBoardUI(container, projectId) {
   filterBar.className = 'filter-bar';
   filterBar.innerHTML = `
     <button class="outline secondary" id="btn-filter-mine">${boardState.filterMine ? 'All Issues' : 'My Issues'}</button>
+    <div class="view-toggle">
+      <button class="outline secondary${boardState.viewMode === 'board' ? ' active' : ''}" data-view="board" title="Board view">Board</button>
+      <button class="outline secondary${boardState.viewMode === 'list' ? ' active' : ''}" data-view="list" title="List view">List</button>
+    </div>
     <span class="spacer"></span>
     <a href="#projects" class="outline secondary" role="button" style="font-size:0.8rem;padding:0.4rem 0.9rem;text-decoration:none">&#8592; Projects</a>
     <button id="btn-new-issue">+ New Issue</button>
@@ -277,8 +284,31 @@ function renderBoardUI(container, projectId) {
     sortableInstances.push(sortable);
   });
 
+  // ── List view ────────────────────────────────────────────────
+  const listWrap = document.createElement('div');
+  listWrap.className = 'list-view';
+  listWrap.appendChild(buildListTable(filteredIssues, container, projectId));
+  page.appendChild(listWrap);
+
+  // Show the active view
+  if (boardState.viewMode === 'list') {
+    board.style.display = 'none';
+    tabsEl.style.display = 'none';
+    listWrap.style.display = '';
+  } else {
+    listWrap.style.display = 'none';
+  }
+
   page.appendChild(board);
   container.appendChild(page);
+
+  // ── View toggle ─────────────────────────────────────────────
+  filterBar.querySelector('.view-toggle').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-view]');
+    if (!btn) return;
+    boardState.viewMode = btn.dataset.view;
+    renderBoardUI(container, projectId);
+  });
 
   // ── Tab switching (mobile) ─────────────────────────────────
   tabsEl.addEventListener('click', (e) => {
@@ -322,6 +352,122 @@ function renderBoardUI(container, projectId) {
       },
     });
   });
+}
+
+// ── List view helpers ─────────────────────────────────────────
+
+const PRIORITY_LABELS = { 0: 'None', 1: 'Urgent', 2: 'High', 3: 'Medium', 4: 'Low' };
+const PRIORITY_SORT = { 1: 0, 2: 1, 3: 2, 4: 3, 0: 4 }; // urgent first
+
+function getStatusName(statusId) {
+  const s = boardState.statuses.find((st) => st.id === statusId);
+  return s?.name ?? '';
+}
+
+function sortIssues(issues, col, asc) {
+  const dir = asc ? 1 : -1;
+  return [...issues].sort((a, b) => {
+    let va, vb;
+    switch (col) {
+      case 'identifier': va = a.number ?? 0; vb = b.number ?? 0; break;
+      case 'title':      va = (a.title || '').toLowerCase(); vb = (b.title || '').toLowerCase(); break;
+      case 'status':     va = getStatusName(a.status).toLowerCase(); vb = getStatusName(b.status).toLowerCase(); break;
+      case 'priority':   va = PRIORITY_SORT[a.priority] ?? 9; vb = PRIORITY_SORT[b.priority] ?? 9; break;
+      case 'assignee':   va = (a.assigneeName || '').toLowerCase(); vb = (b.assigneeName || '').toLowerCase(); break;
+      case 'dueDate':    va = a.dueDate || ''; vb = b.dueDate || ''; break;
+      default:           return 0;
+    }
+    if (va < vb) return -1 * dir;
+    if (va > vb) return 1 * dir;
+    return 0;
+  });
+}
+
+function buildListTable(issues, container, projectId) {
+  const sorted = sortIssues(issues, boardState.sortCol, boardState.sortAsc);
+
+  const table = document.createElement('table');
+  table.className = 'issue-list-table';
+  table.setAttribute('role', 'grid');
+
+  const cols = [
+    { key: 'identifier', label: 'ID' },
+    { key: 'title',      label: 'Title' },
+    { key: 'status',     label: 'Status' },
+    { key: 'priority',   label: 'Priority' },
+    { key: 'assignee',   label: 'Assignee' },
+    { key: 'dueDate',    label: 'Due Date' },
+  ];
+
+  const arrow = (key) =>
+    boardState.sortCol === key ? (boardState.sortAsc ? ' \u25B2' : ' \u25BC') : '';
+
+  const thead = document.createElement('thead');
+  thead.innerHTML = `<tr>${cols.map((c) =>
+    `<th data-sort="${c.key}" class="sortable-header">${c.label}${arrow(c.key)}</th>`
+  ).join('')}</tr>`;
+  table.appendChild(thead);
+
+  thead.addEventListener('click', (e) => {
+    const th = e.target.closest('th[data-sort]');
+    if (!th) return;
+    const key = th.dataset.sort;
+    if (boardState.sortCol === key) {
+      boardState.sortAsc = !boardState.sortAsc;
+    } else {
+      boardState.sortCol = key;
+      boardState.sortAsc = true;
+    }
+    renderBoardUI(container, projectId);
+  });
+
+  const tbody = document.createElement('tbody');
+
+  const priorityDot = (p) => {
+    const colors = { 1: '#ef4444', 2: '#f97316', 3: '#eab308', 4: '#3b82f6', 0: '#9ca3af' };
+    return `<span class="priority-dot" style="background:${colors[p] || '#9ca3af'}"></span> ${PRIORITY_LABELS[p] || 'None'}`;
+  };
+
+  const fmtDate = (iso) => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d)) return '';
+    const overdue = d < new Date();
+    const str = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    return overdue ? `<span class="overdue">${str}</span>` : str;
+  };
+
+  sorted.forEach((issue) => {
+    const tr = document.createElement('tr');
+    tr.className = 'issue-list-row';
+    tr.innerHTML = `
+      <td class="cell-id">${escapeForList(issue.identifier || '')}</td>
+      <td class="cell-title">${escapeForList(issue.title)}</td>
+      <td class="cell-status"><span class="status-pill">${escapeForList(getStatusName(issue.status))}</span></td>
+      <td class="cell-priority">${priorityDot(issue.priority)}</td>
+      <td class="cell-assignee">${escapeForList(issue.assigneeName || '\u2014')}</td>
+      <td class="cell-due">${fmtDate(issue.dueDate)}</td>
+    `;
+    tr.addEventListener('click', () => openEditModal(issue, container, projectId));
+    tbody.appendChild(tr);
+  });
+
+  if (sorted.length === 0) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="${cols.length}" style="text-align:center;padding:2rem;color:var(--pico-muted-color)">No issues found</td>`;
+    tbody.appendChild(tr);
+  }
+
+  table.appendChild(tbody);
+  return table;
+}
+
+function escapeForList(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 /**

@@ -309,6 +309,123 @@ body {
   text-transform: uppercase;
 }
 
+/* ── View Toggle ──────────────────────────────────────────── */
+.view-toggle {
+  display: inline-flex;
+  border: 1px solid var(--pico-card-border-color);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.view-toggle button {
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.75rem;
+  min-width: 3rem;
+  border-right: 1px solid var(--pico-card-border-color);
+}
+
+.view-toggle button:last-child { border-right: none; }
+
+.view-toggle button.active {
+  background: var(--pico-primary);
+  color: var(--pico-primary-inverse);
+  border-color: var(--pico-primary);
+}
+
+/* ── List View ───────────────────────────────────────────── */
+.list-view {
+  flex: 1;
+  overflow: auto;
+  padding: 0.5rem 1.5rem 1.5rem;
+}
+
+.issue-list-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.issue-list-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--pico-card-background-color);
+  border-bottom: 2px solid var(--pico-card-border-color);
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.sortable-header:hover { color: var(--pico-primary); }
+
+.issue-list-row {
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.issue-list-row:hover { background: var(--pico-primary-background); }
+
+.issue-list-row td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--pico-card-border-color);
+  vertical-align: middle;
+}
+
+.cell-id {
+  font-size: 0.75rem;
+  color: var(--pico-muted-color);
+  font-weight: 500;
+  white-space: nowrap;
+  width: 1%;
+}
+
+.cell-title {
+  font-weight: 500;
+  max-width: 400px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cell-status { width: 1%; white-space: nowrap; }
+.cell-priority { width: 1%; white-space: nowrap; }
+.cell-assignee { white-space: nowrap; }
+.cell-due { width: 1%; white-space: nowrap; }
+
+.status-pill {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--pico-secondary-background);
+  color: var(--pico-secondary-color);
+}
+
+.priority-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-right: 0.3rem;
+}
+
+.overdue {
+  color: #ef4444;
+  font-weight: 600;
+}
+
 /* ── Drag States ──────────────────────────────────────────── */
 .sortable-ghost {
   opacity: 0.4;
@@ -489,6 +606,10 @@ body {
     border-bottom-right-radius: 0;
     max-height: 85vh;
   }
+
+  .list-view { padding: 0.5rem 0.75rem; }
+  .cell-assignee, .cell-due { display: none; }
+  .cell-title { max-width: 180px; }
 
   #toast-container { bottom: 1rem; right: 1rem; left: 1rem; }
   .toast { max-width: 100%; }
